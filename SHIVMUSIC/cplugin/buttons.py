@@ -271,7 +271,7 @@ def panel_markup_5(_, videoid, chat_id, bot_username):
     ]
     return buttons
 
-def panel_markup_clone(_, vidid, chat_id):
+def panel_markup_clone(_, vidid, chat_id, premium=True, **kwargs):
     s_map = get_style_map()
     buttons = [
         [

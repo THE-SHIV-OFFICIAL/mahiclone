@@ -373,7 +373,7 @@ async def play_commnd(
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -461,7 +461,7 @@ async def play_commnd(
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -676,7 +676,7 @@ async def play_commnd(
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -709,7 +709,7 @@ async def play_commnd(
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -802,7 +802,7 @@ async def play_commnd(
         try:
             if getattr(mystic, "text", None):
                 await mystic.edit_text(MSG_STARTING)
-                await asyncio.sleep(0.5)
+                pass  # no delay
         except: pass
 
         try:
@@ -852,7 +852,7 @@ async def play_commnd(
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
             
             await mystic.delete()
@@ -877,7 +877,7 @@ async def play_commnd(
                 try:
                     if getattr(mystic, "text", None):
                         await mystic.edit_text(MSG_STARTING)
-                        await asyncio.sleep(0.5)
+                        pass  # no delay
                 except: pass
                 
                 await mystic.delete()
@@ -899,7 +899,7 @@ async def play_commnd(
                 try:
                     if getattr(mystic, "text", None):
                         await mystic.edit_text(MSG_STARTING)
-                        await asyncio.sleep(0.5)
+                        pass  # no delay
                 except: pass
                 
                 await mystic.delete()
@@ -974,7 +974,7 @@ async def play_music(client, CallbackQuery, _):
     
     try:
         await mystic.edit_text(MSG_STARTING)
-        await asyncio.sleep(0.5)
+        pass  # no delay
     except: pass
 
     try:
@@ -1085,7 +1085,7 @@ async def play_playlists_command(client, CallbackQuery, _):
             
     try:
         await mystic.edit_text(MSG_STARTING)
-        await asyncio.sleep(0.5)
+        pass  # no delay
     except: pass
 
     try:

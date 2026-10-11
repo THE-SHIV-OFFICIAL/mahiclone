@@ -66,7 +66,7 @@ async def delete_promo_record(chat_id: int, message_id: int):
 # ==========================================
 PROMO_IMAGE = "https://files.catbox.moe/etdhlr.jpg"
 PROMO_TEXT = """
-<tg-emoji emoji-id="6172312314423808834">✨</tg-emoji> ᴛʜɪꜱ ɪꜱ [✶ 🎀 ᴍᴀʜɪ ᴍᴜꜱɪᴄ ᴄʟᴏɴᴇ 🎀 ✶](https://t.me/clone_MUSICrobot)
+<tg-emoji emoji-id="6172312314423808834">✨</tg-emoji> ᴛʜɪꜱ ɪꜱ [✶ 🎀 ꜱɪᴢᴢᴜ ᴍᴜꜱɪᴄ 🎀 ✶](https://t.me/SizzuMusicBot)
 
 <tg-emoji emoji-id="6271537028307881531">💎</tg-emoji> ᴧ ᴘʀєᴍɪᴜᴍ ᴅєꜱɪɢηєᴅ ϻᴜꜱɪᴄ ᴘʟᴧʏєʀ ʙσᴛ ꜰσʀ ᴛєʟєɢʀᴧϻ ɢʀσᴜᴘ & ᴄʜᴧηηєʟ. 
 <tg-emoji emoji-id="6082387600599944892">🎧</tg-emoji> 24x7 ᴍᴜꜱɪᴄ • ꜱᴍᴏᴏᴛʜ ᴀɴᴅ ꜰᴀꜱᴛ ᴘʟᴀʏʙᴀᴄᴋ
@@ -76,7 +76,7 @@ PROMO_TEXT = """
 <tg-emoji emoji-id="6100424015111787987">📌</tg-emoji> ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ, ᴍᴀᴋᴇ ᴍᴇ ᴀᴅᴍɪɴ, ᴀɴᴅ ꜱᴇɴᴅ /play song name ᴛᴏ ꜱᴛᴀʀᴛ ᴛʜᴇ ᴍᴜꜱɪᴄ.
 """
 PROMO_BUTTON = InlineKeyboardMarkup(
-    [[InlineKeyboardButton("✨ Aᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ✨", url="https://t.me/clone_MUSICrobot?startgroup=true")]]
+    [[InlineKeyboardButton("✨ Aᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ✨", url="https://t.me/SizzuMusicBot?startgroup=true")]]
 )
 
 

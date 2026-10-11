@@ -1,4 +1,5 @@
 from pyrogram import filters
+from config import SUDOERS as SUDO_USERS
 from SHIVMUSIC.utils.admin_check import admin_check
 
 

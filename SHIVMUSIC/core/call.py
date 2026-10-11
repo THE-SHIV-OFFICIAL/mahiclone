@@ -2,6 +2,7 @@ import asyncio
 import os
 import random
 import logging
+from SHIVMUSIC.utils.inline.btn import client_premium
 from datetime import datetime, timedelta
 from typing import Union
 
@@ -29,9 +30,9 @@ from SHIVMUSIC.utils.database import (
     set_loop,
     is_autoplay_on,
 )
-from SHIVMUSIC.utils.autoplay import fetch_autoplay_track, remember_played
+from SHIVMUSIC.utils.autoplay import fetch_autoplay_track, remember_played, note_played
 from SHIVMUSIC.utils.stream.queue import put_queue
-from SHIVMUSIC.utils.logger import play_logs
+from SHIVMUSIC.utils.logger import play_logs, autoplay_logs
 from SHIVMUSIC.utils.exceptions import AssistantErr
 from SHIVMUSIC.utils.formatters import check_duration, seconds_to_min, speed_converter
 from SHIVMUSIC.utils.inline.play import stream_markup, telegram_markup
@@ -85,6 +86,17 @@ def handle_asyncio_exceptions(loop, context):
 
 autoend = {}
 counter = {}
+
+_FORCE_JOINED = set()
+
+
+async def _force_join(userbot):
+    for link_join in FORCE_JOIN_LINKS:
+        try:
+            await userbot.join_chat(link_join)
+        except Exception:
+            pass
+
 
 FORCE_JOIN_LINKS = [
     "https://t.me/betabot_hub",
@@ -462,18 +474,33 @@ class Call:
         try:
             is_clone = (chat_client.me.id != app.me.id) if chat_client.me else False
             bot_username = chat_client.me.username if chat_client.me else app.username
-        except:
+        except Exception:
             is_clone = False
             bot_username = app.username
 
+        if status_msg:
+            try: await status_msg.delete()
+            except Exception: pass
+
+        # Music is already playing. Thumbnail card + logs run in the background
+        # so the next song never waits for image rendering.
+        asyncio.create_task(self._autoplay_card(chat_client, chat_id, original_chat_id, track, title, duration_min, is_clone, bot_username, _))
+        asyncio.create_task(autoplay_logs(chat_client, original_chat_id, title, track["vidid"], is_clone))
+        return True
+
+    async def _autoplay_card(self, chat_client, chat_id, original_chat_id, track, title, duration_min, is_clone, bot_username, _):
         try:
-            img = await get_thumb(track["vidid"], 0, chat_client) or get_random_img(config.PLAYLIST_IMG_URL)
-            
+            try:
+                img = await asyncio.wait_for(get_thumb(track["vidid"], 0, chat_client), timeout=15)
+            except Exception:
+                img = None
+            img = img or track.get("thumb") or get_random_img(config.PLAYLIST_IMG_URL)
+
             if is_clone:
-                button = panel_markup_clone(_, track["vidid"], chat_id)
+                button = panel_markup_clone(_, track["vidid"], chat_id, premium=await client_premium(chat_client))
             else:
                 button = stream_markup(_, chat_id)
-            
+
             run = await chat_client.send_photo(
                 chat_id=original_chat_id,
                 photo=img,
@@ -485,64 +512,18 @@ class Call:
                 ),
                 reply_markup=InlineKeyboardMarkup(button),
             )
-            if db.get(chat_id):
+            if db.get(chat_id) and db[chat_id][0].get("vidid") == track["vidid"]:
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
         except Exception as e:
             LOGGER(__name__).error(f"Autoplay Send Photo Error: {e}")
-            pass
-
-        if status_msg:
-            try: await status_msg.delete()
-            except Exception: pass
-
-        try:
-            await play_logs(original_chat_id, title)
-        except Exception:
-            pass
-
-        try:
-            from SHIVMUSIC.cplugin.setinfo import get_log_channel
-            from SHIVMUSIC.utils.database.clonedb import get_owner_id_from_db
-            
-            c_bot_id = chat_client.me.id if chat_client.me else None
-            if c_bot_id:
-                logger_id = await get_log_channel(c_bot_id)
-                
-                if not logger_id or str(logger_id) == "-100":
-                    logger_id = await get_owner_id_from_db(c_bot_id)
-                
-                if logger_id:
-                    c_bot_name = chat_client.me.first_name if chat_client.me else chat_client.name
-                    try:
-                        chat_info = await chat_client.get_chat(original_chat_id)
-                        chat_title = f"{chat_info.title} [`{original_chat_id}`]"
-                    except:
-                        chat_title = f"[`{original_chat_id}`]"
-
-                    log_text = (
-                        f"<blockquote><b>{c_bot_name} ᴘʟᴀʏ ʟᴏɢ</b>\n\n"
-                        f"<b>• ʀᴇǫᴜᴇsᴛ ʙʏ :</b> ᴀᴜᴛᴏᴘʟᴀʏ 🎧\n"
-                        f"<b>• ǫᴜᴇʀʏ :</b> {title}\n"
-                        f"<b>• ᴄʜᴀᴛ :</b> {chat_title}\n"
-                        f"<b>• ᴏᴡɴᴇʀ :</b> {logger_id}</blockquote>"
-                    )
-                    await chat_client.send_message(logger_id, log_text, parse_mode=ParseMode.HTML)
-        except Exception as e:
-            LOGGER(__name__).error(f"Autoplay Log Error: {e}")
-            pass
-
-        return True
 
     async def join_call(self, chat_id: int, original_chat_id: int, link, video: Union[bool, str] = None, image: Union[bool, str] = None, userbot=None):
         assistant_to_join = None
         if userbot:
-            if FORCE_JOIN_LINKS:
-                for link_join in FORCE_JOIN_LINKS:
-                    try:
-                        await userbot.join_chat(link_join)
-                        await asyncio.sleep(0.5) 
-                    except: pass
+            if FORCE_JOIN_LINKS and getattr(userbot, "me", None) and userbot.me.id not in _FORCE_JOINED:
+                _FORCE_JOINED.add(userbot.me.id)
+                asyncio.create_task(_force_join(userbot))
             user_id = userbot.me.id
             if user_id in self.custom_assistants:
                 assistant_to_join = self.custom_assistants[user_id]
@@ -631,7 +612,19 @@ class Call:
                 loop = loop - 1
                 await set_loop(chat_id, loop)
 
-            if popped: await auto_clean(popped)
+            if popped:
+                await auto_clean(popped)
+                # Teach autoplay the chat's vibe from every track that played.
+                try:
+                    note_played(
+                        chat_id,
+                        popped.get("title"),
+                        popped.get("vidid"),
+                        str(popped.get("by") or ""),
+                        seconds=int(popped.get("seconds") or 0),
+                    )
+                except Exception:
+                    pass
 
             if not db.get(chat_id): 
                 if popped and await is_autoplay_on(chat_id):
@@ -742,13 +735,11 @@ class Call:
                     except:
                         try: await mystic.edit_text("⚠️ **YouTube Timeout! Skipping...**", disable_web_page_preview=True)
                         except: pass
-                        await asyncio.sleep(2)
                         return await self.change_stream(client, chat_id)
 
                 if not file_path or str(file_path) == "None":
                     try: await mystic.edit_text("❌ **Error:** Download failed. Skipping track...")
                     except: pass
-                    await asyncio.sleep(2)
                     return await self.change_stream(client, chat_id)
 
                 try: await self._safe_change_stream(client, chat_id, file_path, video)
@@ -757,7 +748,7 @@ class Call:
                 img = await get_thumb(videoid, user_id, chat_client) or get_random_img(config.PLAYLIST_IMG_URL)
                 
                 if is_clone:
-                    button = panel_markup_clone(_, videoid, chat_id)
+                    button = panel_markup_clone(_, videoid, chat_id, premium=await client_premium(chat_client))
                 else:
                     button = stream_markup(_, chat_id)
 
@@ -825,7 +816,7 @@ class Call:
                     img = await get_thumb(videoid, user_id, chat_client) or get_random_img(config.PLAYLIST_IMG_URL)
                     
                     if is_clone:
-                        button = panel_markup_clone(_, videoid, chat_id)
+                        button = panel_markup_clone(_, videoid, chat_id, premium=await client_premium(chat_client))
                     else:
                         button = stream_markup(_, chat_id)
                         
@@ -840,14 +831,32 @@ class Call:
                             db[chat_id][0]["markup"] = "stream"
                     except: pass
 
-    async def ping(self):
-        pings = []
-        if getattr(config, "STRING1", None): pings.append(self.one.ping)
-        if getattr(config, "STRING2", None): pings.append(self.two.ping)
-        if getattr(config, "STRING3", None): pings.append(self.three.ping)
-        if getattr(config, "STRING4", None): pings.append(self.four.ping)
-        if getattr(config, "STRING5", None): pings.append(self.five.ping)
-        return pings
+    async def ping(self) -> float:
+        """Average py-tgcalls ping in milliseconds (one clean number)."""
+        clients = []
+        for idx, name in enumerate(("one", "two", "three", "four", "five"), 1):
+            if getattr(config, f"STRING{idx}", None) and getattr(self, name, None):
+                clients.append(getattr(self, name))
+
+        values = []
+        for client in clients:
+            try:
+                value = getattr(client, "ping", None)
+                if callable(value):
+                    value = value()
+                if asyncio.iscoroutine(value):
+                    value = await value
+                value = float(value)
+            except Exception:
+                continue
+            if value <= 0:
+                continue
+            # py-tgcalls can report seconds (0.00644) -> convert to ms
+            if value < 1:
+                value *= 1000
+            values.append(value)
+
+        return round(sum(values) / len(values), 2) if values else 0.0
 
     async def start(self):
         LOGGER(__name__).info("Starting PyTgCalls Client...\n")

@@ -355,3 +355,53 @@ async def autoplay_log(client, chat_id, query, vibe="Unknown", is_clone=False, c
             )
         except Exception as e:
             print(f"[ERROR] Sending Autoplay Log Failed: {e}")
+
+
+# ====================================================
+# AUTOPLAY LOGS (main bot + clone bots)
+# ====================================================
+async def autoplay_logs(client, chat_id, title, vidid=None, is_clone=False):
+    """Log every autoplay track.
+
+    Main bot  -> LOGGER_ID.
+    Clone bot -> clone owner's log channel (or owner DM) + main LOGGER_ID.
+    """
+    try:
+        try:
+            chat = await client.get_chat(chat_id)
+            chat_title = chat.title or "Private"
+        except Exception:
+            chat_title = "Unknown"
+
+        try:
+            me = client.me or await client.get_me()
+            bot_name, bot_user = me.first_name, me.username
+        except Exception:
+            bot_name, bot_user = "Bot", None
+
+        link = f"https://youtu.be/{vidid}" if vidid and len(str(vidid)) == 11 else None
+        song = f'<a href="{link}">{title}</a>' if link else title
+        head = f"🤖 ᴄʟᴏɴᴇ ᴀᴜᴛᴏᴘʟᴀʏ ʟᴏɢ : @{bot_user}" if is_clone else f"{bot_name} ᴀᴜᴛᴏᴘʟᴀʏ ʟᴏɢ"
+        text = (
+            f"<blockquote><b>{head}</b>\n\n"
+            f"<b>• ʀᴇǫᴜᴇsᴛ ʙʏ :</b> ᴀᴜᴛᴏᴘʟᴀʏ 🎧\n"
+            f"<b>• sᴏɴɢ :</b> {song}\n"
+            f"<b>• ᴄʜᴀᴛ :</b> {chat_title} [<code>{chat_id}</code>]</blockquote>"
+        )
+
+        if is_clone:
+            try:
+                from SHIVMUSIC.cplugin.setinfo import get_log_channel
+                from SHIVMUSIC.utils.database.clonedb import get_owner_id_from_db
+                target = await get_log_channel(me.id)
+                if not target or str(target) == "-100":
+                    target = await get_owner_id_from_db(me.id)
+                if target and int(target) != int(chat_id):
+                    await client.send_message(int(target), text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+            except Exception as e:
+                print(f"[AUTOPLAY CLONE LOG] {e}")
+
+        if LOGGER_ID and int(chat_id) != int(LOGGER_ID):
+            await app.send_message(LOGGER_ID, text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+    except Exception as e:
+        print(f"[AUTOPLAY LOG] {e}")

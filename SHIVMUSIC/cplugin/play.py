@@ -416,7 +416,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -489,7 +489,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
 
             try:
@@ -630,7 +630,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
                 try:
                     if getattr(mystic, "text", None):
                         await mystic.edit_text(MSG_STARTING)
-                        await asyncio.sleep(0.5)
+                        pass  # no delay
                 except: pass
 
                 await stream(client, _, mystic, user_id, details, chat_id, user_name, message.chat.id, streamtype="soundcloud", forceplay=fplay, userbot=userbot)
@@ -679,7 +679,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
                     try:
                         if getattr(mystic, "text", None):
                             await mystic.edit_text(MSG_STARTING)
-                            await asyncio.sleep(0.5)
+                            pass  # no delay
                     except: pass
 
                     await stream(client, _, mystic, message.from_user.id, url, chat_id, message.from_user.first_name, message.chat.id, video=video, streamtype="index", forceplay=fplay, userbot=userbot)
@@ -755,7 +755,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
         try:
             if getattr(mystic, "text", None):
                 await mystic.edit_text(MSG_STARTING)
-                await asyncio.sleep(0.5)
+                pass  # no delay
         except: pass
 
         try:
@@ -790,7 +790,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
             try:
                 if getattr(mystic, "text", None):
                     await mystic.edit_text(MSG_STARTING)
-                    await asyncio.sleep(0.5)
+                    pass  # no delay
             except: pass
             
             await mystic.delete()
@@ -807,7 +807,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
                 try:
                     if getattr(mystic, "text", None):
                         await mystic.edit_text(MSG_STARTING)
-                        await asyncio.sleep(0.5)
+                        pass  # no delay
                 except: pass
                 
                 await mystic.delete()
@@ -823,7 +823,7 @@ async def play_commnd(client, message: Message, _, chat_id, video, channel, play
                 try:
                     if getattr(mystic, "text", None):
                         await mystic.edit_text(MSG_STARTING)
-                        await asyncio.sleep(0.5)
+                        pass  # no delay
                 except: pass
                 
                 await mystic.delete()
@@ -918,7 +918,7 @@ async def play_music(client: Client, CallbackQuery, _):
     
     try:
         await mystic.edit_text(MSG_STARTING)
-        await asyncio.sleep(0.5)
+        pass  # no delay
     except: pass
 
     try:
@@ -1041,7 +1041,7 @@ async def play_playlists_command(client: Client, CallbackQuery, _):
             
     try:
         await mystic.edit_text(MSG_STARTING)
-        await asyncio.sleep(0.5)
+        pass  # no delay
     except: pass
 
     try:
